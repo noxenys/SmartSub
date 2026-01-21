@@ -133,7 +133,28 @@ subconverter_backends:
 
 支持多种通知方式，通过环境变量配置：
 
-#### Telegram Bot 通知（推荐）
+### 4. 配置 GITHUB_TOKEN / GIST_TOKEN (必选)
+
+为了生成 **GitHub Gist 订阅链接**（推荐，最稳定私密），你需要配置 Token：
+
+1. **创建 Token**:
+   - 访问 [GitHub Settings > Tokens](https://github.com/settings/tokens/new)
+   - Note: `SmartSub`
+   - Scopes: **仅勾选 `gist`**
+   - 点击 Generate token 并复制
+
+2. **配置 Secrets**:
+   - 在仓库 Settings -> Secrets -> Actions -> New repository secret
+   - Name: `GIST_TOKEN`
+   - Value: (刚才复制的 Token)
+
+3. **(推荐) 配置 GIST_ID 实现永久订阅**:
+   - 如果你想让订阅链接**永远不变**：
+     1. 手动创建一个 Gist (或运行一次脚本生成)
+     2. 获取 Gist ID (URL 中最后那串字符)
+     3. 添加 Secret Name: `GIST_ID`, Value: (你的 Gist ID)
+
+#### Telegram Bot 通知（可选，推荐）
 
 1. 在 Telegram 搜索 `@BotFather` 创建 Bot
 2. 获取 Bot Token 和 Chat ID
