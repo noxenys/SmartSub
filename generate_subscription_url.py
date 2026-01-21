@@ -82,11 +82,17 @@ class SubscriptionURLGenerator:
                     gist_url = result['html_url']
                     raw_url = result['files']['subscription.txt']['raw_url']
                     
+                    # 🔧 修复：转换为永久链接（去掉版本 hash）
+                    # 原格式: https://gist.githubusercontent.com/用户名/gist_id/raw/版本hash/文件名
+                    # 新格式: https://gist.githubusercontent.com/用户名/gist_id/raw/文件名
+                    # 永久链接会自动指向最新版本，不会因更新而失效
+                    permanent_url = raw_url.split('/raw/')[0] + '/raw/subscription.txt'
+                    
                     logger.info(f'✅ Gist更新成功 (复用已有链接)')
                     logger.info(f'   Gist页面: {gist_url}')
-                    logger.info(f'   订阅URL: {raw_url}')
+                    logger.info(f'   订阅URL（永久）: {permanent_url}')
                     
-                    return raw_url
+                    return permanent_url
                 else:
                     logger.warning(f'⚠️ Gist更新失败 (HTTP {response.status_code})，将创建新的Gist')
                     existing_gist_id = None  # 标记为无效,创建新的
@@ -112,6 +118,9 @@ class SubscriptionURLGenerator:
                     gist_url = result['html_url']
                     raw_url = result['files']['subscription.txt']['raw_url']
                     
+                    # 🔧 修复：转换为永久链接（去掉版本 hash）
+                    permanent_url = raw_url.split('/raw/')[0] + '/raw/subscription.txt'
+                    
                     # 保存 Gist ID 以便下次更新
                     try:
                         with open(gist_id_file, 'w', encoding='utf-8') as f:
@@ -121,10 +130,11 @@ class SubscriptionURLGenerator:
                         logger.warning(f'⚠️ 保存 Gist ID 失败: {e}')
                     
                     logger.info(f'✅ Gist创建成功')
+                    logger.info(f'   Gist ID: {gist_id}')
                     logger.info(f'   Gist页面: {gist_url}')
-                    logger.info(f'   订阅URL: {raw_url}')
+                    logger.info(f'   订阅URL（永久）: {permanent_url}')
                     
-                    return raw_url
+                    return permanent_url
                 else:
                     logger.error(f'❌ Gist创建失败: HTTP {response.status_code}')
                     logger.error(f'   {response.text}')
@@ -352,8 +362,9 @@ class SubscriptionURLGenerator:
 
 def main():
     """主函数"""
+    import sys
     logger.remove()
-    logger.add(lambda msg: print(msg, end=''), colorize=True, 
+    logger.add(sys.stdout, colorize=True, 
                format="<green>{time:HH:mm:ss}</green> | <level>{message}</level>")
     
     # 默认路径
