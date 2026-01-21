@@ -1,8 +1,8 @@
-# SmartSub - 智能订阅聚合器
+# SmartSub - 全能代理订阅聚合与质量筛选工具
 
-🚀 **自动化、全方位、高质量的代理订阅抓取与聚合工具**
+🚀 **基于 GitHub Actions 的自动化抓取、去重与节点质量监测系统**
 
-从互联网各个角落（Telegram 频道、GitHub 仓库、普通网页）自动抓取、智能筛选并聚合免费的代理订阅链接与节点。
+SmartSub 旨在为您提供最纯净、稳定的代理体验。它能自动遍历 Telegram 频道、GitHub 仓库及各类网页，智能捕获并聚合订阅链接。内置先进的**节点质量过滤器**，自动剔除高风险 IP、高延迟节点及重复内容，实时生成适配 **Clash**、**Loon**、**Quantumult X** 及 **Sub-Store** 的标准化订阅文件。
 
 [![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-自动化部署-green)](https://github.com/features/actions)
 [![Python](https://img.shields.io/badge/Python-3.x-blue)](https://www.python.org/)
