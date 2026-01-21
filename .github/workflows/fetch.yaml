@@ -111,8 +111,20 @@ jobs:
           echo "📝 没有文件变更，跳过提交"
         else
           git commit -m "🍀 爬取订阅源 $(date '+%Y-%m-%d %H:%M:%S')"
-          # Pull latest changes to avoid conflict
-          git pull --rebase origin main
+          
+          # 捕获任何在 commit 后生成的文件变更
+          git add ./sub || true
+          git add ./collected_nodes.txt || true
+          git add -f ./failed_subscriptions.log || true
+          git add ./blacklist.txt || true
+          
+          # 如果有新的变更，追加到提交
+          if ! git diff --staged --quiet; then
+            git commit --amend --no-edit
+          fi
+          
+          # Pull latest changes to avoid conflict (使用 autostash 自动处理未暂存的变更)
+          git pull --rebase --autostash origin main
         fi
         
     - name: 推送更改
