@@ -17,9 +17,12 @@ class SubscriptionURLGenerator:
         self.telegram_bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
         self.telegram_chat_id = os.getenv('TELEGRAM_CHAT_ID')
     
-    def create_github_gist(self, nodes_file, description="High Quality Proxy Nodes"):
+    def create_or_update_github_gist(self, nodes_file, description="High Quality Proxy Nodes"):
         """
-        创建GitHub Gist并返回订阅URL
+        创建或更新GitHub Gist并返回订阅URL
+        
+        优先更新已有的Gist,如果不存在则创建新的
+        Gist ID 保存在 .gist_id 文件中
         
         Args:
             nodes_file: 节点文件路径
@@ -29,7 +32,7 @@ class SubscriptionURLGenerator:
             订阅URL（raw内容URL）
         """
         if not self.github_token:
-            logger.warning('⚠️ 未配置 GITHUB_TOKEN，无法创建Gist')
+            logger.warning('⚠️ 未配置 GITHUB_TOKEN，无法创建/更新Gist')
             return None
         
         try:
@@ -40,43 +43,92 @@ class SubscriptionURLGenerator:
             # Base64编码（订阅格式）
             b64_content = base64.b64encode(nodes_content.encode('utf-8')).decode('utf-8')
             
-            # GitHub Gist API
-            url = 'https://api.github.com/gists'
             headers = {
                 'Authorization': f'token {self.github_token}',
                 'Accept': 'application/vnd.github.v3+json'
             }
             
-            # 创建Gist
-            data = {
-                'description': description,
-                'public': False,  # 私密Gist
-                'files': {
-                    'subscription.txt': {
-                        'content': b64_content
+            # 检查是否存在已保存的 Gist ID
+            gist_id_file = os.path.join(os.path.dirname(nodes_file), '.gist_id')
+            existing_gist_id = None
+            
+            if os.path.exists(gist_id_file):
+                try:
+                    with open(gist_id_file, 'r', encoding='utf-8') as f:
+                        existing_gist_id = f.read().strip()
+                    logger.info(f'📝 发现已有 Gist ID: {existing_gist_id[:8]}...')
+                except:
+                    pass
+            
+            # 尝试更新已有的 Gist
+            if existing_gist_id:
+                update_url = f'https://api.github.com/gists/{existing_gist_id}'
+                update_data = {
+                    'description': description,
+                    'files': {
+                        'subscription.txt': {
+                            'content': b64_content
+                        }
                     }
                 }
-            }
-            
-            response = requests.post(url, json=data, headers=headers, timeout=10)
-            
-            if response.status_code == 201:
-                result = response.json()
-                gist_url = result['html_url']
-                raw_url = result['files']['subscription.txt']['raw_url']
                 
-                logger.info(f'✅ Gist创建成功')
-                logger.info(f'   Gist页面: {gist_url}')
-                logger.info(f'   订阅URL: {raw_url}')
+                response = requests.patch(update_url, json=update_data, headers=headers, timeout=10)
                 
-                return raw_url
-            else:
-                logger.error(f'❌ Gist创建失败: HTTP {response.status_code}')
-                logger.error(f'   {response.text}')
-                return None
+                if response.status_code == 200:
+                    result = response.json()
+                    gist_url = result['html_url']
+                    raw_url = result['files']['subscription.txt']['raw_url']
+                    
+                    logger.info(f'✅ Gist更新成功 (复用已有链接)')
+                    logger.info(f'   Gist页面: {gist_url}')
+                    logger.info(f'   订阅URL: {raw_url}')
+                    
+                    return raw_url
+                else:
+                    logger.warning(f'⚠️ Gist更新失败 (HTTP {response.status_code})，将创建新的Gist')
+                    existing_gist_id = None  # 标记为无效,创建新的
+            
+            # 创建新的 Gist
+            if not existing_gist_id:
+                create_url = 'https://api.github.com/gists'
+                create_data = {
+                    'description': description,
+                    'public': False,  # 私密Gist
+                    'files': {
+                        'subscription.txt': {
+                            'content': b64_content
+                        }
+                    }
+                }
+                
+                response = requests.post(create_url, json=create_data, headers=headers, timeout=10)
+                
+                if response.status_code == 201:
+                    result = response.json()
+                    gist_id = result['id']
+                    gist_url = result['html_url']
+                    raw_url = result['files']['subscription.txt']['raw_url']
+                    
+                    # 保存 Gist ID 以便下次更新
+                    try:
+                        with open(gist_id_file, 'w', encoding='utf-8') as f:
+                            f.write(gist_id)
+                        logger.info(f'💾 已保存 Gist ID 到 {gist_id_file}')
+                    except Exception as e:
+                        logger.warning(f'⚠️ 保存 Gist ID 失败: {e}')
+                    
+                    logger.info(f'✅ Gist创建成功')
+                    logger.info(f'   Gist页面: {gist_url}')
+                    logger.info(f'   订阅URL: {raw_url}')
+                    
+                    return raw_url
+                else:
+                    logger.error(f'❌ Gist创建失败: HTTP {response.status_code}')
+                    logger.error(f'   {response.text}')
+                    return None
         
         except Exception as e:
-            logger.error(f'❌ Gist创建异常: {e}')
+            logger.error(f'❌ Gist操作异常: {e}')
             return None
     
     def create_subscription_with_converter(self, nodes_file):
@@ -156,8 +208,8 @@ class SubscriptionURLGenerator:
             ]
         
         # 方案1: GitHub Gist（推荐）
-        logger.info('\n📌 方案1: 创建GitHub Gist订阅...')
-        gist_url = self.create_github_gist(nodes_file)
+        logger.info('\n📌 方案1: 创建/更新GitHub Gist订阅...')
+        gist_url = self.create_or_update_github_gist(nodes_file)
         
         if gist_url:
             message_parts.append("\n*方案1: GitHub Gist订阅* ⭐推荐\n")

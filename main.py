@@ -47,7 +47,7 @@ class SubscriptionCollector:
         
         # 4. 正则表达式
         self.re_str = r"https?://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]"
-        self.node_str = r'(?:vmess|ss|ssr|trojan|vless|hysteria|hysteria2)://[a-zA-Z0-9+/=@#?&._-]+'
+        self.node_str = r'(?:vmess|ss|ssr|trojan|vless|hysteria|hysteria2)://[-a-zA-Z0-9+/=@#?&._%[\]:]+'
         self.check_node_url_str = "https://{}/sub?target={}&url={}&insert=false&config=config%2FACL4SSR.ini"
         
         # 5. 配置参数 (默认值)
