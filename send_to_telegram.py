@@ -283,7 +283,7 @@ def main():
 
     nodes_file = os.path.join(base_dir, 'sub', 'high_quality_nodes.txt')
 
-    report_file = os.path.join(base_dir, 'sub', 'quality_report.json')
+    report_file = os.path.join(base_dir, 'runtime', 'quality_report.json')
 
     # 发送订阅
 

@@ -100,7 +100,7 @@ python main.py
 graph TD
   A[main.py 抓取订阅/节点] --> B{生成 collected_nodes.txt}
   B --> C[node_quality_filter.py --probe-only]
-  C --> D[生成 probe_head.json]
+  C --> D[生成 runtime/probe_head.json]
   D --> E[启动 sing-box 本地代理]
   E --> F[node_quality_filter.py 全量筛选]
   F --> G[generate_subscription_url.py]
@@ -296,7 +296,7 @@ subconverter_backends:
 | `sub_all_sub_store.txt` | Sub-Store 专用格式（区分机场与开心玩耍） |
 | `YYYY/MM/D-DD.yaml` | 按日期归档的每日抓取结果 |
 | `sub/high_quality_nodes.txt` | ⭐ **高质量筛选节点**（经过连通性、延迟、IP风险检测） |
-| `sub/quality_report.json` | 节点质量分析报告（包含统计数据） |
+| `runtime/quality_report.json` | 节点质量分析报告（包含统计数据） |
 
 ### 节点格式规范
 
@@ -365,7 +365,7 @@ python scripts/self_check.py
 python scripts/clean_sources.py
 ```
 
-依据最近一次运行生成的 `sub/source_health.json`，自动移除 404 与低质量来源，并做去重。
+依据最近一次运行生成的 `runtime/source_health.json`，自动移除 404 与低质量来源，并做去重。
 
 ### 首次部署
 

@@ -32,7 +32,7 @@ python scripts/self_check.py
 python scripts/clean_sources.py
 ```
 
-需要最近一次运行生成的 `sub/source_health.json`，可自动移除 404 与低质量来源。
+需要最近一次运行生成的 `runtime/source_health.json`，可自动移除 404 与低质量来源。
 
 ---
 
@@ -75,5 +75,5 @@ export HTTPS_PROXY="http://127.0.0.1:7890"
 
 当 `sing-box` 启动失败或代理不可用时，会跳过本地代理：
 - 检查 `sub/singbox.log`
-- 确认 `sub/probe_head.json` 是否生成
+- 确认 `runtime/probe_head.json` 是否生成
 - 需要兜底代理时可设置 `DYNAMIC_PROBE_PROXY_URL`

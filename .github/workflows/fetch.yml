@@ -37,6 +37,14 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
 
+    - name: 缓存代理二进制
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/smartsub
+        key: ${{ runner.os }}-smartsub-binaries-${{ hashFiles('scripts/download_singbox.py', 'scripts/download_mihomo.py') }}
+        restore-keys: |
+          ${{ runner.os }}-smartsub-binaries-
+
     - name: 设置时区
       run: sudo timedatectl set-timezone 'Asia/Shanghai'
 
@@ -84,20 +92,65 @@ jobs:
       env:
         FALLBACK_PROXY_URL: ${{ vars.DYNAMIC_PROBE_PROXY_URL }}
       run: |
-        if [ -f "sub/probe_head.json" ]; then
+        PROXY_URL=""
+        mkdir -p runtime
+        if [ -f "runtime/probe_head.json" ]; then
           echo "🧩 生成 sing-box 配置..."
-          python ./scripts/generate_singbox_config.py --probe-json sub/probe_head.json --output sub/singbox-probe.json --http-port 7891 --socks-port 7890
+          python ./scripts/generate_singbox_config.py --probe-json runtime/probe_head.json --output runtime/singbox-probe.json --http-port 7891 --socks-port 7890
           echo "⬇️ 下载 sing-box..."
           python ./scripts/download_singbox.py --output ./sing-box
-          echo "🚀 启动 sing-box 本地代理..."
-          ./sing-box run -c sub/singbox-probe.json > sub/singbox.log 2>&1 &
-          sleep 2
-          if curl -fsS -m 6 -x http://127.0.0.1:7891 https://www.google.com/generate_204 >/dev/null; then
-            echo "DYNAMIC_PROBE_PROXY_URL=http://127.0.0.1:7891" >> $GITHUB_ENV
-            echo "SINGBOX_PROXY_STARTED=1" >> $GITHUB_ENV
-            echo "✅ sing-box 代理可用"
+          chmod +x ./sing-box
+          ./sing-box version || true
+          echo "🔎 校验 sing-box 配置..."
+          if ! ./sing-box check -c runtime/singbox-probe.json; then
+            echo "⚠️ sing-box 配置校验失败，切换备用客户端"
           else
-            echo "⚠️ sing-box 代理测试失败，跳过本地代理"
+            echo "🚀 启动 sing-box 本地代理..."
+            ./sing-box run -c runtime/singbox-probe.json > runtime/singbox.log 2>&1 &
+            sleep 5
+            if curl -fsS -m 8 --connect-timeout 5 -x http://127.0.0.1:7891 https://www.google.com/generate_204 >/dev/null; then
+              PROXY_URL="http://127.0.0.1:7891"
+              echo "SINGBOX_PROXY_STARTED=1" >> $GITHUB_ENV
+              echo "✅ sing-box 代理可用"
+            else
+              echo "⚠️ sing-box 代理测试失败，切换备用客户端"
+              echo "---- sing-box.log (tail) ----"
+              tail -n 200 runtime/singbox.log || true
+              ps aux | grep '[s]ing-box' || true
+              ss -lntp 2>/dev/null | grep 7891 || true
+            fi
+          fi
+
+          if [ -z "$PROXY_URL" ]; then
+            echo "🧩 生成 mihomo 配置..."
+            python ./scripts/generate_mihomo_config.py --probe-json runtime/probe_head.json --output runtime/mihomo-probe.yaml --mixed-port 7892 --log-level info
+            echo "⬇️ 下载 mihomo..."
+            python ./scripts/download_mihomo.py --output ./mihomo
+            chmod +x ./mihomo
+            ./mihomo -v || true
+            echo "🚀 启动 mihomo 本地代理..."
+            ./mihomo -f runtime/mihomo-probe.yaml > runtime/mihomo.log 2>&1 &
+            sleep 5
+            if curl -fsS -m 8 --connect-timeout 5 -x http://127.0.0.1:7892 https://www.google.com/generate_204 >/dev/null; then
+              PROXY_URL="http://127.0.0.1:7892"
+              echo "MIHOMO_PROXY_STARTED=1" >> $GITHUB_ENV
+              echo "✅ mihomo 代理可用"
+            else
+              echo "⚠️ mihomo 代理测试失败"
+              echo "---- mihomo.log (tail) ----"
+              tail -n 200 runtime/mihomo.log || true
+              ps aux | grep '[m]ihomo' || true
+              ss -lntp 2>/dev/null | grep 7892 || true
+            fi
+          fi
+
+          if [ -n "$PROXY_URL" ]; then
+            echo "DYNAMIC_PROBE_PROXY_URL=$PROXY_URL" >> $GITHUB_ENV
+          elif [ -n "$FALLBACK_PROXY_URL" ]; then
+            echo "⚠️ 本地代理失败，使用回退代理"
+            echo "DYNAMIC_PROBE_PROXY_URL=$FALLBACK_PROXY_URL" >> $GITHUB_ENV
+          else
+            echo "⚠️ 本地代理失败，且未配置回退代理"
           fi
         elif [ -n "$FALLBACK_PROXY_URL" ]; then
           echo "⚠️ 未生成 probe_head.json，使用回退代理"

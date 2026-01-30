@@ -48,7 +48,7 @@ vmess://ew0KICAidiI6I...
 ### 输出位置
 ```
 sub/high_quality_nodes.txt     # 高质量节点列表
-sub/quality_report.json        # 质量分析报告
+runtime/quality_report.json    # 质量分析报告
 ```
 
 ---

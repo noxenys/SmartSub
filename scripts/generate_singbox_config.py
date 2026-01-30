@@ -280,8 +280,8 @@ def build_config(outbound, http_port, socks_port, log_level):
 
 def main():
     parser = argparse.ArgumentParser(description='Generate sing-box config from probe_head.json')
-    parser.add_argument('--probe-json', default='sub/probe_head.json')
-    parser.add_argument('--output', default='sub/singbox-probe.json')
+    parser.add_argument('--probe-json', default='runtime/probe_head.json')
+    parser.add_argument('--output', default='runtime/singbox-probe.json')
     parser.add_argument('--http-port', type=int, default=7891)
     parser.add_argument('--socks-port', type=int, default=7890)
     parser.add_argument('--log-level', default='info')

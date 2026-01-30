@@ -262,7 +262,7 @@ dynamic_probe:
     - vmess
     - ss
     - hysteria2
-  save_path: sub/probe_head.json
+  save_path: runtime/probe_head.json
 ```
 
 环境变量：

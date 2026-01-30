@@ -45,7 +45,7 @@ def _load_health(path):
 def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     config_path = os.path.join(base_dir, '..', 'config.yaml')
-    health_path = os.path.join(base_dir, '..', 'sub', 'source_health.json')
+    health_path = os.path.join(base_dir, '..', 'runtime', 'source_health.json')
     failed_log_path = os.path.join(base_dir, '..', 'failed_subscriptions.log')
 
     if not os.path.exists(config_path):

@@ -69,15 +69,21 @@ class NodeQualityFilter:
 
         self.sub_dir = os.path.join(self.base_dir, 'sub')
 
+        self.runtime_dir = os.path.join(self.base_dir, 'runtime')
+
         self.output_file = os.path.join(self.sub_dir, 'high_quality_nodes.txt')
 
-        self.report_file = os.path.join(self.sub_dir, 'quality_report.json')
+        self.report_file = os.path.join(self.runtime_dir, 'quality_report.json')
 
         # 确保输出目录存在
 
         if not os.path.exists(self.sub_dir):
 
             os.makedirs(self.sub_dir)
+
+        if not os.path.exists(self.runtime_dir):
+
+            os.makedirs(self.runtime_dir)
 
         # 默认配置
 
@@ -197,7 +203,7 @@ class NodeQualityFilter:
 
         self.dynamic_probe_proxy_url = ''
 
-        self.dynamic_probe_save_path = os.path.join(self.sub_dir, 'probe_head.json')
+        self.dynamic_probe_save_path = os.path.join(self.runtime_dir, 'probe_head.json')
 
         self.dynamic_probe_node = None
 

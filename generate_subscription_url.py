@@ -435,7 +435,9 @@ class SubscriptionURLGenerator:
 
         # 创建订阅URL文件（始终生成）
 
-        urls_file = nodes_file.replace('.txt', '_urls.txt')
+        output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'runtime')
+        os.makedirs(output_dir, exist_ok=True)
+        urls_file = os.path.join(output_dir, 'high_quality_nodes_urls.txt')
 
         with open(urls_file, 'w', encoding='utf-8') as f:
 

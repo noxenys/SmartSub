@@ -12,7 +12,6 @@ import time
 import random
 from loguru import logger
 from tqdm import tqdm
-from retry import retry
 from urllib.parse import quote, urlencode, urlparse
 from pre_check import pre_check, get_sub_all
 from utils import is_safe_url, mask_sensitive_data
@@ -262,83 +261,42 @@ class SubscriptionCollector:
             return []
         # 针对 Telegram 频道的优化：不重试，快速跳过
         is_tg_channel = 't.me/s/' in url
-        # TG 频道: 1 次尝试 (0 次重试)
-        # 普通链接: 2 次尝试 (1 次重试) - 从 3 改为 2，提高效率
-        max_attempts = 1 if is_tg_channel else 2
         url_list = []
         node_list = []
         data = None
-        # 重试机制
-        for attempt in range(max_attempts):
-            try:
-                headers = {
-                    'User-Agent': self.get_random_ua()
-                }
-                # 发起请求 (启用 stream 模式防止内存溢出)
-                resp = requests.get(url, headers=headers, timeout=self.request_timeout, proxies=self.proxies, stream=True)
-                # 针对 403/429 的特殊重试逻辑
-                if resp.status_code in [403, 429]:
-                    resp.close()
-                    if attempt < max_attempts - 1:
-                        wait_time = random.uniform(1, 3)
-                        msg = f'{mask_sensitive_data(url)}\t遇到 {resp.status_code}'
-                        if resp.status_code == 403:
-                            msg += ' (可能 IP 被屏蔽)'
-                        logger.warning(f'{msg}，等待 {wait_time:.1f}s 后更换 UA 重试...')
-                        time.sleep(wait_time)
-                        continue
-                    else:
-                        # TG 频道遇到限制直接跳过，不输出警告，减少日志噪音
-                        if not is_tg_channel:
-                            logger.warning(f'{mask_sensitive_data(url)}\t遇到 {resp.status_code}，重试次数耗尽')
-                        return []
-                # 针对 404 的快速失败逻辑
-                if resp.status_code == 404:
-                    resp.close()
-                    logger.warning(f'{mask_sensitive_data(url)}\t资源不存在 (404)，跳过')
-                    return []
-                # 针对 500/502/503/504 的服务器错误重试逻辑
-                if resp.status_code >= 500:
-                    resp.close()
-                    if attempt < max_attempts - 1:
-                        wait_time = random.uniform(2, 5) # 服务器错误多等一会儿
-                        logger.warning(f'{mask_sensitive_data(url)}\t服务器错误 {resp.status_code}，等待 {wait_time:.1f}s 后重试...')
-                        time.sleep(wait_time)
-                        continue
-                    else:
-                        logger.warning(f'{mask_sensitive_data(url)}\t服务器错误 {resp.status_code}，重试次数耗尽')
-                        return []
-                # 正常响应处理
-                content_limit = self.content_limit_mb * 1024 * 1024
-                content = b""
-                download_failed = False
-                try:
-                    for chunk in resp.iter_content(chunk_size=8192):
-                        content += chunk
-                        if len(content) > content_limit:
-                            logger.warning(f'{mask_sensitive_data(url)}\t超过大小限制({self.content_limit_mb}MB)，截断下载')
-                            # download_failed = True  <-- 不需要标记为失败，直接使用截断后的内容尝试提取
-                            break
-                except Exception as e:
-                     logger.warning(f'{mask_sensitive_data(url)}\t下载中断: {e}')
-                     download_failed = True
+        try:
+            headers = {
+                'User-Agent': self.get_random_ua()
+            }
+            # 发起请求 (启用 stream 模式防止内存溢出)
+            resp = requests.get(url, headers=headers, timeout=self.request_timeout, proxies=self.proxies, stream=True)
+            # 严格过滤：检测 400 以上的页面直接跳过 (用户指令)
+            if resp.status_code >= 400:
                 resp.close()
-                if download_failed and attempt < max_attempts - 1:
-                    continue
-                # 尝试解码
-                data = content.decode('utf-8', errors='ignore')
-                break # 成功获取，跳出循环
-            except requests.RequestException as e:
-                if attempt < max_attempts - 1:
-                    time.sleep(1)
-                    continue
-                else:
-                    if not is_tg_channel:
-                         logger.warning(f'{mask_sensitive_data(url)}\t网络请求失败: {type(e).__name__}')
-                    return []
-            except Exception as e:
-                logger.error(f'{mask_sensitive_data(url)}\t处理失败: {type(e).__name__} - {str(e)}')
+                logger.warning(f'{mask_sensitive_data(url)}\t状态码 {resp.status_code} >= 400，直接跳过')
                 return []
+            # 正常响应处理
+            content_limit = self.content_limit_mb * 1024 * 1024
+            content = b""
+            try:
+                for chunk in resp.iter_content(chunk_size=8192):
+                    content += chunk
+                    if len(content) > content_limit:
+                        logger.warning(f'{mask_sensitive_data(url)}\t超过大小限制({self.content_limit_mb}MB)，截断下载')
+                        # 不需要标记为失败，直接使用截断后的内容尝试提取
+                        break
+            except Exception as e:
+                logger.warning(f'{mask_sensitive_data(url)}\t下载中断: {e}')
+            resp.close()
+            # 尝试解码
+            data = content.decode('utf-8', errors='ignore')
+        except requests.RequestException as e:
+            if not is_tg_channel:
+                logger.warning(f'{mask_sensitive_data(url)}\t网络请求失败: {type(e).__name__}')
+            return []
+        except Exception as e:
+            logger.error(f'{mask_sensitive_data(url)}\t处理失败: {type(e).__name__} - {str(e)}')
+            return []
         if not data:
             return []
         try:
@@ -450,123 +408,111 @@ class SubscriptionCollector:
         if url.lower().endswith(self.static_extensions):
             bar.update(1)
             return
-        # 3次重试机制 (替代 @retry)
-        for attempt in range(2):
-            try:
-                headers = {'User-Agent': self.get_random_ua()}
-                res = requests.get(url, headers=headers, timeout=self.request_timeout, stream=True, proxies=self.proxies)
-                # 针对 403/429 的特殊重试逻辑
-                if res.status_code in [403, 429]:
+        # 单次请求，不重试
+        try:
+            headers = {'User-Agent': self.get_random_ua()}
+            res = requests.get(url, headers=headers, timeout=self.request_timeout, stream=True, proxies=self.proxies)
+            # 严格过滤：检测 400 以上的页面直接跳过 (用户指令)
+            if res.status_code >= 400:
+                res.close()
+                self._record_failed(url, f'http_{res.status_code}')
+                logger.warning(f'{mask_sensitive_data(url)}\t状态码 {res.status_code} >= 400，直接跳过')
+                bar.update(1)
+                return
+            if res.status_code == 200:
+                header_info_valid = False
+                header_play_info = ""
+                # Header Check
+                # 注意：获取到流量信息后不应直接返回，必须继续执行 Body 下载和节点提取，
+                # 这样才能确保该订阅中的节点被解析并加入去重池。
+                try:
+                    info = res.headers.get('subscription-userinfo')
+                    if info:
+                        info_num = re.findall(r'\d+', info)
+                        if info_num:
+                            upload = int(info_num[0])
+                            download = int(info_num[1])
+                            total = int(info_num[2])
+                            unused = (total - upload - download) / 1024 / 1024 / 1024
+                            unused_rounded = round(unused, 2)
+                            if unused_rounded > 0:
+                                header_info_valid = True
+                                header_play_info = '可用流量:' + str(unused_rounded) + ' GB                    ' + url
+                except Exception:
+                    pass
+                # Body Check
+                content_limit = self.content_limit_mb * 1024 * 1024
+                content = b""
+                try:
+                    for chunk in res.iter_content(chunk_size=8192):
+                        content += chunk
+                        if len(content) > content_limit:
+                            logger.debug(f'{mask_sensitive_data(url)} 超过大小限制，截断下载')
+                            break
+                    text = content.decode('utf-8', errors='ignore')
+                except Exception:
                     res.close()
-                    if attempt < 1:
-                        wait_time = random.uniform(1, 3)
-                        msg = f'{mask_sensitive_data(url)}\t检测遇到 {res.status_code}'
-                        if res.status_code == 403:
-                            msg += ' (可能 IP 被屏蔽)'
-                        logger.warning(f'{msg}，等待 {wait_time:.1f}s 后更换 UA 重试...')
-                        time.sleep(wait_time)
-                        continue
-                    else:
-                        self._record_failed(url, f'http_{res.status_code}')
-                        logger.warning(f'{mask_sensitive_data(url)}\t状态码异常: {res.status_code} (重试耗尽)')
-                        break
-                if res.status_code == 200:
-                    header_info_valid = False
-                    header_play_info = ""
-                    # Header Check
-                    # 注意：获取到流量信息后不应直接返回，必须继续执行 Body 下载和节点提取，
-                    # 这样才能确保该订阅中的节点被解析并加入去重池。
-                    try: 
-                        info = res.headers.get('subscription-userinfo')
-                        if info:
-                            info_num = re.findall(r'\d+', info)
-                            if info_num:
-                                upload = int(info_num[0])
-                                download = int(info_num[1])
-                                total = int(info_num[2])
-                                unused = (total - upload - download) / 1024 / 1024 / 1024
-                                unused_rounded = round(unused, 2)
-                                if unused_rounded > 0:
-                                    header_info_valid = True
-                                    header_play_info = '可用流量:' + str(unused_rounded) + ' GB                    ' + url
-                    except Exception:
-                        pass
-                    # Body Check
-                    content_limit = self.content_limit_mb * 1024 * 1024
-                    content = b""
-                    try:
-                        for chunk in res.iter_content(chunk_size=8192):
-                            content += chunk
-                            if len(content) > content_limit:
-                                logger.debug(f'{mask_sensitive_data(url)} 超过大小限制，截断下载')
-                                break
-                        text = content.decode('utf-8', errors='ignore')
-                    except Exception:
-                        res.close()
-                        if attempt < 2: continue # 下载中断尝试重试
-                        break
-                    finally:
-                        res.close()
-                    # 质量控制：内容去重检查 (已废弃文件级 MD5 去重)
+                    self._record_failed(url, 'download_failed')
+                    logger.warning(f'{mask_sensitive_data(url)}\t下载中断 - 已标记为失效')
+                    bar.update(1)
+                    return
+                finally:
+                    res.close()
+                # 质量控制：内容去重检查 (已废弃文件级 MD5 去重)
+                with self.lock:
+                    self.quality_stats['total_checked'] += 1
+                # 解析节点并加入全局去重池
+                nodes = self.extract_nodes(text)
+                if nodes:
                     with self.lock:
-                        self.quality_stats['total_checked'] += 1
-                    # 解析节点并加入全局去重池
-                    nodes = self.extract_nodes(text)
-                    if nodes:
+                        self.unique_nodes.update(nodes)
+                # Clash 判断
+                try:
+                    if 'proxies:' in text:
+                        if not self.validate_subscription_quality(url, text, is_clash=True):
+                            bar.update(1)
+                            return
                         with self.lock:
-                            self.unique_nodes.update(nodes)
-                    # Clash 判断
-                    is_clash = False
-                    try:
-                        if 'proxies:' in text:
-                            is_clash = True
-                            if not self.validate_subscription_quality(url, text, is_clash=True):
-                                break # 质量不达标，不重试
-                            with self.lock:
-                                self.new_clash_list.append(url)
-                                if header_info_valid:
-                                    self.new_sub_list.append(url)
-                                    self.play_list.append(header_play_info)
-                            break # 成功
-                    except Exception:
-                        pass
-                    # V2Ray/Base64 判断
-                    try:
-                        sample_length = min(256, len(text))
-                        head_text = text[:sample_length].strip()
-                        missing_padding = len(head_text) % 4
-                        if missing_padding:
-                            head_text += '=' * (4 - missing_padding)
-                        decoded_text = base64.b64decode(head_text).decode('utf-8', errors='ignore')
-                        if self.filter_base64(decoded_text):
-                            if not self.validate_subscription_quality(url, text, is_clash=False):
-                                break # 质量不达标，不重试
-                            with self.lock:
-                                self.new_v2_list.append(url)
-                                if header_info_valid:
-                                    self.new_sub_list.append(url)
-                                    self.play_list.append(header_play_info)
-                    except Exception:
-                        pass
-                    # 成功处理完毕（即使没匹配到任何类型，也视为200响应处理结束）
-                    break
-                else:
-                    # 非 200, 403, 429 的其他错误 (如 404, 500)
-                    res.close()
-                    if attempt < 2 and res.status_code >= 500:
-                        # 5xx 错误可以重试
-                        continue
-                    self._record_failed(url, f'http_{res.status_code}')
-                    logger.warning(f'{mask_sensitive_data(url)}\t状态码异常: {res.status_code}')
-                    break
-            except Exception:
-                # 网络异常重试
-                if attempt < 2:
-                    continue
-                self._record_failed(url, 'request_failed')
-                logger.warning(f'{mask_sensitive_data(url)}\t请求失败 - 已标记为失效')
-                break
-        bar.update(1)
+                            self.new_clash_list.append(url)
+                            if header_info_valid:
+                                self.new_sub_list.append(url)
+                                self.play_list.append(header_play_info)
+                        bar.update(1)
+                        return
+                except Exception:
+                    pass
+                # V2Ray/Base64 判断
+                try:
+                    sample_length = min(256, len(text))
+                    head_text = text[:sample_length].strip()
+                    missing_padding = len(head_text) % 4
+                    if missing_padding:
+                        head_text += '=' * (4 - missing_padding)
+                    decoded_text = base64.b64decode(head_text).decode('utf-8', errors='ignore')
+                    if self.filter_base64(decoded_text):
+                        if not self.validate_subscription_quality(url, text, is_clash=False):
+                            bar.update(1)
+                            return
+                        with self.lock:
+                            self.new_v2_list.append(url)
+                            if header_info_valid:
+                                self.new_sub_list.append(url)
+                                self.play_list.append(header_play_info)
+                except Exception:
+                    pass
+                bar.update(1)
+                return
+            # 非 200 也非 >= 400 的其他状态 (如 3xx 未跳转)
+            res.close()
+            self._record_failed(url, f'http_{res.status_code}')
+            logger.warning(f'{mask_sensitive_data(url)}\t状态码异常: {res.status_code}')
+            bar.update(1)
+            return
+        except Exception:
+            self._record_failed(url, 'request_failed')
+            logger.warning(f'{mask_sensitive_data(url)}\t请求失败 - 已标记为失效')
+            bar.update(1)
+            return
     def start_check_urls(self, url_list):
         logger.info('开始筛选---')
         # 加载自动黑名单
@@ -715,9 +661,9 @@ class SubscriptionCollector:
         if not self.failed_sub_reasons and not self.low_quality_sub_reasons:
             return
         try:
-            sub_dir = os.path.join(self.base_dir, 'sub')
-            os.makedirs(sub_dir, exist_ok=True)
-            output_path = os.path.join(sub_dir, 'source_health.json')
+            runtime_dir = os.path.join(self.base_dir, 'runtime')
+            os.makedirs(runtime_dir, exist_ok=True)
+            output_path = os.path.join(runtime_dir, 'source_health.json')
             payload = {
                 'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 'target': path_yaml,
@@ -760,7 +706,7 @@ class SubscriptionCollector:
         logger.info('='*60)
     @logger.catch
     def url_check_valid(self, target, url, bar):
-        # 注意：这里移除了 @retry 装饰器，改由内部循环处理重试和故障转移
+        # 注意：这里使用单次请求，不进行重试
         # 这样可以确保遍历所有后端，而不是只重试某一个
         success = False
         url_encode = quote(url, safe='')
