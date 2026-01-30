@@ -1,0 +1,17 @@
+{
+  "node": {
+    "url": "vless://7bcb7241-33f9-48e0-8660-b33aed2bff7a@104.21.96.1:2096?path=%2F&amp;security=tls&amp;alpn=http%2F1.1&amp;encryption=none&amp;fp=chrome&amp;type=ws&amp;sni=8j3f7HD37h.PaGES.dEV#%40EuServer",
+    "protocol": "vless",
+    "host": "104.21.96.1",
+    "port": 2096,
+    "score": 9,
+    "sni": null,
+    "host_header": null,
+    "path": "/",
+    "security": null,
+    "tls": null,
+    "allow_insecure": null,
+    "latency": 1.88,
+    "status": "online"
+  }
+}

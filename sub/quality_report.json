@@ -1,0 +1,132 @@
+{
+  "summary": {
+    "total_input": 28549,
+    "after_dedup": 28549,
+    "parsed_success": 13286,
+    "available_nodes": 150,
+    "availability_rate": "1.13%"
+  },
+  "protocol_distribution": {
+    "vless": 150
+  },
+  "latency_distribution": {
+    "<100ms": 150,
+    "100-200ms": 0,
+    "200-300ms": 0,
+    "300-500ms": 0
+  },
+  "top_10_nodes": [
+    {
+      "rank": 1,
+      "protocol": "vless",
+      "host": "192.0.54.6",
+      "port": 2087,
+      "latency": "1.8ms",
+      "score": 26,
+      "risk_score": 0,
+      "country": "US"
+    },
+    {
+      "rank": 2,
+      "protocol": "vless",
+      "host": "69.84.182.177",
+      "port": 443,
+      "latency": "1.82ms",
+      "score": 26,
+      "risk_score": 0,
+      "country": "US"
+    },
+    {
+      "rank": 3,
+      "protocol": "vless",
+      "host": "192.200.160.155",
+      "port": 443,
+      "latency": "1.88ms",
+      "score": 26,
+      "risk_score": 0,
+      "country": "US"
+    },
+    {
+      "rank": 4,
+      "protocol": "vless",
+      "host": "208.86.168.45",
+      "port": 443,
+      "latency": "1.98ms",
+      "score": 26,
+      "risk_score": 0,
+      "country": "US"
+    },
+    {
+      "rank": 5,
+      "protocol": "vless",
+      "host": "160.79.105.118",
+      "port": 443,
+      "latency": "2.02ms",
+      "score": 26,
+      "risk_score": 0,
+      "country": "US"
+    },
+    {
+      "rank": 6,
+      "protocol": "vless",
+      "host": "198.62.62.122",
+      "port": 443,
+      "latency": "2.05ms",
+      "score": 26,
+      "risk_score": 0,
+      "country": "US"
+    },
+    {
+      "rank": 7,
+      "protocol": "vless",
+      "host": "45.67.215.233",
+      "port": 443,
+      "latency": "2.06ms",
+      "score": 26,
+      "risk_score": 0,
+      "country": "RU"
+    },
+    {
+      "rank": 8,
+      "protocol": "vless",
+      "host": "198.62.62.161",
+      "port": 443,
+      "latency": "2.06ms",
+      "score": 26,
+      "risk_score": 0,
+      "country": "US"
+    },
+    {
+      "rank": 9,
+      "protocol": "vless",
+      "host": "69.84.182.52",
+      "port": 443,
+      "latency": "2.09ms",
+      "score": 26,
+      "risk_score": 0,
+      "country": "US"
+    },
+    {
+      "rank": 10,
+      "protocol": "vless",
+      "host": "192.200.160.9",
+      "port": 2083,
+      "latency": "2.11ms",
+      "score": 26,
+      "risk_score": 0,
+      "country": "US"
+    }
+  ],
+  "risk_filter": {
+    "enabled": true,
+    "mode": "score",
+    "blocked": 0,
+    "penalized": 2323
+  },
+  "asn_filter": {
+    "enabled": true,
+    "mode": "score",
+    "blocked": 0,
+    "penalized": 0
+  }
+}
