@@ -910,3 +910,49 @@ https://jkun.waimaosass.icu/api/v1/client/subscribe?token=6479fb825ffbbbd110f9d3
 https://jkun.waimaosass.icu/api/v1/client/subscribe?token=984322c13796c85186ff4a2d95dab889	request_failed
 https://jkun.waimaosass.icu/api/v1/client/subscribe?token=77f7fc6635d2eaeba9347b4ebaf78a61	request_failed
 https://jkun.waimaosass.icu/api/v1/client/subscribe?token=dcccd8fa55086036e698d714ce88880d	request_failed
+
+=== 2026-02-11 04:58:38 - 失效订阅 (41 个) ===
+https://www.applnn.com/42686.html	http_403
+https://www.applnn.com/45893.html	http_403
+https://www.applnn.com/41806.html	http_403
+https://www.applnn.com/41987.html	http_403
+https://www.applnn.com/41653.html	http_403
+https://www.applnn.com/43596.html	http_403
+https://www.applnn.com/45853.html	http_403
+https://www.applnn.com/41907.html	http_403
+https://www.applnn.com/45747.html	http_403
+https://www.applnn.com/46285.html	http_403
+https://www.applnn.com/41957.html	http_403
+https://v2rayse.com/fs/public/20260205/bnvzzt2.json	request_failed
+https://v2rayse.com/fs/public/20260209/5in1znw.json	request_failed
+https://v2rayse.com/fs/public/20260209/3yi794m.json	request_failed
+https://v2rayse.com/fs/public/20260208/696w9ld.yaml	request_failed
+https://v2rayse.com/fs/public/20260210/z7nq2a8.yaml	request_failed
+https://v2rayse.com/fs/public/20260203/355aya8.json	request_failed
+https://v2rayse.com/fs/public/20260208/kdfbypk.txt	request_failed
+https://v2rayse.com/fs/public/20260209/ebalqih.yaml	request_failed
+https://v2rayse.com/fs/public/20260205/jz3rfgp.txt	request_failed
+https://v2rayse.com/fs/public/20260203/sffyzzw.txt	request_failed
+https://v2rayse.com/fs/public/20260208/am8f3p9.txt	request_failed
+https://v2rayse.com/fs/public/20260208/y1tj6b2.yaml	request_failed
+https://apps.apple.com/us/app/jumpjumpvpn-super-unlimited/id6451097052	request_failed
+https://www	request_failed
+https://medium.com/m/signin?redirect=https%3A%2F%2Fmedium.com%2Ffavicon.ico&loginType=default	http_403
+https://www.paypal.com/signin?returnUri=https://t.paypal.com/ts?v=1.0.0	http_403
+https://www.facebook.com/login.php?next=https%3A%2F%2Fwww.facebook.com%2Ffavicon.ico%3F_rdr%3Dp	http_400
+https://hhhhhhhhj.191266.xyz/WFyGCV2kJQvjXnxbsFuJG6WRyjLAVp/2bfe58f7-da1d-45df-ab43-7c665b20ee29/#default	request_failed
+https://github.com/free18/v2ray/blob/5adfd6c5/README.md#L66-L80	http_429
+https://raw.githubusercontent.com/soroushmirzaei/telegram-configs-collector/main/channels/protocols/tuic	http_404
+https://ai-nude.ru/refferal-1/	request_failed
+https://ai-nude.ru/refferal-2/	request_failed
+https://chat.tawana.online/sub/tawanaproxy.txt	request_failed
+https://raw.githubusercontent.com/yebekhe/TelegramV2rayCollector/main/sub/normal/shadowsocks	http_404
+https://github.com/Epodonios/bulk-xray-v2ray-vless-vmess-...-configs/raw/main/sub/Norway/config.txt	http_404
+https://raw.githubusercontent.com/rxsweet/proxies/main/sub/sources/miningAll.yaml	http_404
+https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/Splitted-By-Protocol/hysteria2.txt	http_404
+https://raw.githubusercontent.com/cxr9912/cxr2022/main/ss.yaml	http_404
+https://aeza.net/?ref=387569	request_failed
+https://cxsub.club/link/V3Th0AyWhutlptyH?clash=1	http_429
+
+=== 2026-02-11 04:58:58 - 失效订阅 (1 个) ===
+https://yb.yuanbaojc.site/api/yuanbaojc/cad2d1c58153d940948eb93177d4263b	http_429
