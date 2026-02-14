@@ -1075,3 +1075,28 @@ http://31.171.0.0/16	request_failed
 === 2026-02-14 04:52:52 - 失效订阅 (2 个) ===
 https://pkvwq.no-mad-world.club/link/lD6KOs9havRr1h3D?clash=3&amp;extend=1	http_404
 https://www.yfjc.xyz/api/v1/client/subscribe?token=5aa07dfe2d6de3d7adeb3be29c8684c9	http_403
+
+=== 2026-02-15 04:38:35 - 失效订阅 (23 个) ===
+https://www.applnn.com/39995.html	http_403
+https://www.applnn.com/41260.html	http_403
+https://www.applnn.com/755.html	http_403
+https://www.applnn.com/41999.html	http_403
+https://www.applnn.com/34235.html	http_403
+https://www.applnn.com/2067.html	http_403
+https://www.applnn.com/41955.html	http_403
+https://www.applnn.com/42042.html	http_403
+https://v2rayse.com/fs/public/20260210/ik7ev1t.json	request_failed
+https://v2rayse.com/fs/public/20260210/y56l2u5.yaml	request_failed
+https://v2rayse.com/fs/public/20260212/e0xaz7g.yaml	request_failed
+https://v2rayse.com/convert	request_failed
+https://searchresultsworld.com/sr/754870121/SAFEFRAME.html?%21H2H=	request_failed
+https://searchresultsworld.com/sr/754870121/SAFEFRAME.html?%2Ao0=2	request_failed
+https://free.mayun.us/	request_failed
+https://mirror.ghproxy.com/https://raw.githubusercontent.com/Barabama/FreeNodes/master/nodes/nodefree.txt	request_failed
+https://raw.githubusercontent.com/yebekhe/TelegramV2rayCollector/main/sub/normal/tuic	http_404
+https://raw.githubusercontent.com/mermeroo/free-v2ray-collector/main/main/vless	http_404
+https://raw.githubusercontent.com/amirmohammad-mohammad-88/Sub-Reality-Azadi-config/Config/Azadi-Reality-Different-Base64	http_404
+https://www.freefq.com/free-ss/	request_failed
+https://www.freefq.com/v2ray/	request_failed
+https://freefq.com	request_failed
+https://www.freefq.com/free-ssr	request_failed
