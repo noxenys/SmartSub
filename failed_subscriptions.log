@@ -1100,3 +1100,23 @@ https://www.freefq.com/free-ss/	request_failed
 https://www.freefq.com/v2ray/	request_failed
 https://freefq.com	request_failed
 https://www.freefq.com/free-ssr	request_failed
+
+=== 2026-02-16 04:38:37 - 失效订阅 (18 个) ===
+https://www.applnn.com/15403.html	http_403
+https://www.applnn.com/42040.html	http_403
+https://www.applnn.com/44672.html	http_403
+https://www.applnn.com/591.html	http_403
+https://www.applnn.com/46333.html	http_403
+https://www.applnn.com/42069.html	http_403
+https://v2rayse.com/fs/public/20260215/4z7zgga.txt	request_failed
+https://v2rayse.com/fs/public/20260215/z5qia7c.txt	request_failed
+https://v2rayse.com/fs/public/20260215/4efshou.yaml	request_failed
+https://v2rayse.com/fs/public/20260214/ag3ig6r.json	request_failed
+https://v2rayse.com/fs/public/20260213/2zm3jy8.json	request_failed
+https://v2rayse.com/fs/public/20260215/8fxqdn0.json	request_failed
+https://v2rayse.com/fs/public/20260214/bd3dnce.yaml	request_failed
+https://v2rayse.com/fs/public/20260214/slc5d4x.yaml	request_failed
+https://ktmcloud.me/api/v1/client/subscribe?token=3a9ff76baff1e6b22b5f42c384357b4b	http_403
+https://apps.apple.com/us/app/napsternetv/id1629465476	request_failed
+https://searchresultsworld.com/sr/754870121/SAFEFRAME.html?%21suwk=	request_failed
+https://searchresultsworld.com/sr/754870121/SAFEFRAME.html?%21%21=vy	request_failed
